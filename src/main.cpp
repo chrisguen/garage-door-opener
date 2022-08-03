@@ -6,6 +6,7 @@ Adafruit_NeoPixel pixels(NUM_LED, ALED_PIN, NEO_GRBW + NEO_KHZ800);
 void updateLeds();
 
 void setup() {
+    delay(200);
     pixels.setBrightness(100);
     lastLedUpdate = millis();
     Serial.begin(115200);
@@ -17,11 +18,11 @@ void setup() {
     pinMode(UP_BUTTON_PIN, INPUT_PULLDOWN); //no switch, triggered when input low
     pinMode(DOWN_BUTTON_PIN, INPUT_PULLDOWN); //no switch, triggered when input low
     pinMode(STOP_BUTTON_PIN, INPUT_PULLDOWN); //nc switch, triggered when input high //TODO: switch back to PULLDOWN!!
-
+    setupOTA();
     Serial.println("Setup complete");
 }
 void loop() {
-
+    ArduinoOTA.handle();
     checkButtons();
     checkLimitSwitches();
 
@@ -44,8 +45,10 @@ void loop() {
 }
 
 void updateLeds() {
-    pixels.clear();
+
     if (state == up) {
+        pixels.clear();
+        pixels.setBrightness(100);
         for(int i=0; i<swipeLen; i++) {
             pixels.setPixelColor(swipePos - i, pixels.Color(0, 0, 255 - (255/swipeLen)*i, 0));
             pixels.show();
@@ -55,6 +58,8 @@ void updateLeds() {
             swipePos = 0;
         }
     } else if (state == down) {
+        pixels.clear();
+        pixels.setBrightness(100);
         for(int i=0; i<swipeLen; i++) {
             pixels.setPixelColor(swipePos + i, pixels.Color(255 - (255/swipeLen)*i, 0, 0, 0));
             pixels.show();
@@ -67,6 +72,7 @@ void updateLeds() {
         for(int i=0; i<NUM_LED; i++) {
             pixels.setPixelColor(i, pixels.Color(0, 255, 0, 0));
             pixels.show();
+            pixels.setBrightness(1);
         }
         swipePos = 0;
     }
@@ -124,10 +130,3 @@ void checkLimitSwitches() {
         state = stopped;
     }
 }
-
-//Serial.print("state= ");
-//Serial.println(state);
-//Serial.print("swipePos= ");
-//Serial.println(swipePos);
-//Serial.print("swipeCycle= ");
-//Serial.println(swipeCycle);

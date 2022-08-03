@@ -35,36 +35,34 @@ void loop() {
     }
 
 
-    if (millis() - lastLedUpdate >= 330) {
+    if (millis() - lastLedUpdate >= 50) {
         state = down;
         updateLeds();
         lastLedUpdate = millis();
-        Serial.println(state);
     }
 
 }
 
 void updateLeds() {
     pixels.clear();
-    if (state == down) {
+    if (state == up) {
         for(int i=0; i<swipeLen; i++) {
-            pixels.setPixelColor(i+swipePos, pixels.Color(0, 0, 255, 0));
+            pixels.setPixelColor(swipePos - i, pixels.Color(0, 0, 255 - (255/swipeLen)*i, 0));
             pixels.show();
-
-
-
-        }
-        if (swipePos > NUM_LED) {
-            swipePos = 0;
         }
         swipePos++;
-        if (swipeCycle >= 30) {
-            swipeCycle = 0;
-        } else {
-            swipeCycle++;
+        if (swipePos > NUM_LED + swipeLen) {
+            swipePos = 0;
         }
-    } else if (state == up) {
-
+    } else if (state == down) {
+        for(int i=0; i<swipeLen; i++) {
+            pixels.setPixelColor(swipePos + i, pixels.Color(255 - (255/swipeLen)*i, 0, 0, 0));
+            pixels.show();
+        }
+        swipePos--;
+        if (swipePos < -swipeLen) {
+            swipePos = NUM_LED;
+        }
     } else {
         for(int i=0; i<NUM_LED; i++) {
             pixels.setPixelColor(i, pixels.Color(0, 255, 0, 0));

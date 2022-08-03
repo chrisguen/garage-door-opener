@@ -33,8 +33,8 @@ int lastLedUpdate;
 
 state state = stopped;
 u_int8_t swipeLen = 5;
-u_int16_t swipePos = 0;
-u_int16_t swipeCycle = 0;
+int16_t swipePos = 0;
+
 
 
 #endif //UNTITLED1_MAIN_H

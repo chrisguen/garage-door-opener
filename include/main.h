@@ -3,6 +3,8 @@
 //
 #pragma once
 
+#define SEND_PWM_BY_TIMER
+
 #include <IRremote.h>
 #include <Adafruit_NeoPixel.h>
 #include <WiFi.h>
@@ -10,8 +12,9 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include "wifiCreds.h"
-//#include "PinDefinitionsAndMore.h"
 
+//enable Serial stream
+template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
 #define UPPER_LIMIT_SENSOR_PIN 34
 #define LOWER_LIMIT_SENSER_PIN 35
@@ -29,6 +32,9 @@
 void checkLimitSwitches();
 void checkButtons();
 
+void irSending();
+
+TaskHandle_t send_ir_task;
 
 enum state {
     up,
@@ -36,67 +42,90 @@ enum state {
     stopped
 };
 
+TaskHandle_t Task1;
+
 int lastLedUpdate;
 
 state state = stopped;
 u_int8_t swipeLen = 5;
 int16_t swipePos = 0;
+bool connected = true;
+
+void send_ir_f(void *param){
+    delay(500);
+    while (true) {
+        if (state == up) {
+            //send up ir
+            IrSender.sendNEC(0x0, 0x95, 1);
+        } else if (state == down) {
+            //send down ir
+            IrSender.sendNEC(0x0, 0x99, 1);
+        }
+        yield();
+    }
+}
+
 
 void setupOTA(){
-    Serial.begin(115200);
-    Serial.println("Booting");
+    Serial << "Attempting to connect to " << ssid;
+    Serial.println();
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.println("Connection Failed! Rebooting...");
-        delay(5000);
-        ESP.restart();
+        Serial.println("Connection Failed! No OTA available...");
+        delay(2500);
+        connected = false;
+        break;
+        //ESP.restart();
     }
 
-    // Port defaults to 3232
-    // ArduinoOTA.setPort(3232);
+    if (connected) {
 
-    // Hostname defaults to esp3232-[MAC]
-    ArduinoOTA.setHostname("garagen-oeffner");
+        // Port defaults to 3232
+        // ArduinoOTA.setPort(3232);
 
-    // No authentication by default
-    // ArduinoOTA.setPassword("admin");
+        // Hostname defaults to esp3232-[MAC]
+        ArduinoOTA.setHostname("garagen-oeffner");
 
-    // Password can be set with it's md5 value as well
-    // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-    // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+        // No authentication by default
+        // ArduinoOTA.setPassword("admin");
 
-    ArduinoOTA
-            .onStart([]() {
-                String type;
-                if (ArduinoOTA.getCommand() == U_FLASH)
-                    type = "sketch";
-                else // U_SPIFFS
-                    type = "filesystem";
+        // Password can be set with it's md5 value as well
+        // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
+        // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
 
-                // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-                Serial.println("Start updating " + type);
-            })
-            .onEnd([]() {
-                Serial.println("\nEnd");
-            })
-            .onProgress([](unsigned int progress, unsigned int total) {
-                Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-            })
-            .onError([](ota_error_t error) {
-                Serial.printf("Error[%u]: ", error);
-                if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-                else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-                else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-                else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-                else if (error == OTA_END_ERROR) Serial.println("End Failed");
-            });
+        ArduinoOTA
+                .onStart([]() {
+                    String type;
+                    if (ArduinoOTA.getCommand() == U_FLASH)
+                        type = "sketch";
+                    else // U_SPIFFS
+                        type = "filesystem";
 
-    ArduinoOTA.begin();
+                    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+                    Serial.println("Start updating " + type);
+                })
+                .onEnd([]() {
+                    Serial.println("\nEnd");
+                })
+                .onProgress([](unsigned int progress, unsigned int total) {
+                    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+                })
+                .onError([](ota_error_t error) {
+                    Serial.printf("Error[%u]: ", error);
+                    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+                    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+                    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+                    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+                    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+                });
 
-    Serial.println("Ready");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+        ArduinoOTA.begin();
+
+        Serial.println("Connected");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
+    }
 }
 
 

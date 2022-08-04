@@ -18,34 +18,36 @@ void setup() {
     pinMode(UP_BUTTON_PIN, INPUT_PULLUP); //no switch, triggered when input low
     pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP); //no switch, triggered when input low
     pinMode(STOP_BUTTON_PIN, INPUT_PULLUP); //nc switch, triggered when input high
+
+    xTaskCreatePinnedToCore(
+            send_ir_f,     /* Task function. */
+            "Send IR code",    /* name of task. */
+            2000,           /* Stack size of task */
+            NULL,           /* parameter of the task */
+            1,              /* priority of the task */
+            &send_ir_task, /* Task handle to keep track of created task */
+            0);
+
 #ifdef ota
     setupOTA();
 #endif
+    Serial.print("Main Task running on core ");
+    Serial.println(xPortGetCoreID());
     Serial.println("Setup complete");
 }
+
+
 void loop() {
 #ifdef ota
-    ArduinoOTA.handle();
+    if (connected)ArduinoOTA.handle();
 #endif
     checkButtons();
     checkLimitSwitches();
-
-    if (state == up) {
-        //send up ir
-        //IrSender.sendNEC(0x0, 0x95, 1);
-        //play up anim
-    } else if (state == down) {
-        //send down ir
-        //IrSender.sendNEC(0x0, 0x99, 1);
-        //play down anim
-    }
-
 
     if (millis() - lastLedUpdate >= 30) {
         updateLeds();
         lastLedUpdate = millis();
     }
-
 }
 
 void updateLeds() {
@@ -93,9 +95,7 @@ void checkButtons() {
         state = stopped;
         return;
     }
-    if (state != stopped) {
-        return;
-    }
+
     if (bUP == HIGH && bDown == LOW) {
         state = down;
         swipePos = NUM_LED;
@@ -117,9 +117,19 @@ void checkLimitSwitches() {
         return;
     }
 
-    if (state != stopped) {
-        if (limUp || limLow) {
-            state = stopped;
-        }
+    if (state == up && limLow) {
+        return;
+    }
+    if (state == down && limUp) {
+        return;
+    }
+    if (state == down && limLow) {
+        state = stopped;
+        return;
+    }
+    if (state == up && limUp) {
+        state = stopped;
+        return;
     }
 }
+

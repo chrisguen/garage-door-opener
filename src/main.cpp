@@ -120,14 +120,9 @@ void checkLimitSwitches() {
         return;
     }
 
-    if (state == stopped) {
-        if (limUp == LOW) {
-            state = up;
+    if (state != stopped) {
+        if (limUp || limLow) {
+            state = stopped;
         }
-        if (limLow == LOW) {
-            state = down;
-        }
-    } else {
-        state = stopped;
     }
 }

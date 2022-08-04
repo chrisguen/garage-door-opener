@@ -23,6 +23,8 @@
 
 #define NUM_LED     11
 
+#define ota
+
 
 void checkLimitSwitches();
 void checkButtons();

@@ -18,27 +18,30 @@ void setup() {
     pinMode(UP_BUTTON_PIN, INPUT_PULLUP); //no switch, triggered when input low
     pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP); //no switch, triggered when input low
     pinMode(STOP_BUTTON_PIN, INPUT_PULLUP); //nc switch, triggered when input high
+#ifdef ota
     setupOTA();
+#endif
     Serial.println("Setup complete");
 }
 void loop() {
+#ifdef ota
     ArduinoOTA.handle();
+#endif
     checkButtons();
     checkLimitSwitches();
 
     if (state == up) {
         //send up ir
-        IrSender.sendNEC(0x0, 0x95, 1);
+        //IrSender.sendNEC(0x0, 0x95, 1);
         //play up anim
     } else if (state == down) {
         //send down ir
-        IrSender.sendNEC(0x0, 0x99, 1);
+        //IrSender.sendNEC(0x0, 0x99, 1);
         //play down anim
     }
 
 
-    if (millis() - lastLedUpdate >= 50) {
-        //state = down;
+    if (millis() - lastLedUpdate >= 30) {
         updateLeds();
         lastLedUpdate = millis();
     }
@@ -95,6 +98,7 @@ void checkButtons() {
     }
     if (bUP == HIGH && bDown == LOW) {
         state = down;
+        swipePos = NUM_LED;
     } else if (bDown == HIGH && bUP == LOW) {
         state = up;
     } else {
@@ -106,13 +110,6 @@ void checkLimitSwitches() {
     int limUp = digitalRead(UPPER_LIMIT_SENSOR_PIN);
     int limLow = digitalRead(LOWER_LIMIT_SENSER_PIN);
 
-    if (false){
-        Serial.print("limUp = ");
-        Serial.print(limUp);
-        Serial.print("limLow = ");
-        Serial.print(limLow);
-        Serial.println();
-    }
     //both sensors high -> invalid state
     if (limUp == HIGH && limLow == HIGH) {
         //TODO: print sensor error

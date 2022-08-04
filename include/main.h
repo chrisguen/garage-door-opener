@@ -3,16 +3,15 @@
 //
 #pragma once
 
-#include <IRremote.hpp>
+#include <IRremote.h>
 #include <Adafruit_NeoPixel.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include "wifiCreds.h"
+//#include "PinDefinitionsAndMore.h"
 
-#ifndef UNTITLED1_MAIN_H
-#define UNTITLED1_MAIN_H
 
 #define UPPER_LIMIT_SENSOR_PIN 34
 #define LOWER_LIMIT_SENSER_PIN 35
@@ -20,7 +19,7 @@
 #define STOP_BUTTON_PIN 26
 #define DOWN_BUTTON_PIN 27
 #define IR_SEND_PIN     5
-#define ALED_PIN    13
+#define ALED_PIN        13
 
 #define NUM_LED     11
 
@@ -56,7 +55,7 @@ void setupOTA(){
     // ArduinoOTA.setPort(3232);
 
     // Hostname defaults to esp3232-[MAC]
-    // ArduinoOTA.setHostname("myesp32");
+    ArduinoOTA.setHostname("garagen-oeffner");
 
     // No authentication by default
     // ArduinoOTA.setPassword("admin");
@@ -100,4 +99,36 @@ void setupOTA(){
 
 
 
-#endif //UNTITLED1_MAIN_H
+/*
+ * Up:
+    Protocol=NEC Address=0x0 Command=0x95 Raw-Data=0x6A95FF00 32 bits LSB first
+    Send with: IrSender.sendNEC(0x0, 0x95, <numberOfRepeats>);
+    rawData[68]:
+     -2122700
+     +9050,-4450
+     + 600,- 550 + 600,- 550 + 550,- 600 + 500,- 600
+     + 600,- 550 + 550,- 550 + 600,- 550 + 550,- 550
+     + 600,-1650 + 600,-1700 + 550,-1700 + 550,-1700
+     + 550,-1700 + 550,-1700 + 550,-1700 + 550,-1750
+     + 550,-1700 + 550,- 600 + 500,-1750 + 550,- 550
+     + 550,-1700 + 550,- 600 + 550,- 550 + 550,-1750
+     + 500,- 600 + 600,-1700 + 500,- 600 + 550,-1700
+     + 550,- 600 + 550,-1700 + 550,-1700 + 550,- 600
+     + 500
+    Down:
+
+    Protocol=NEC Address=0x0 Command=0x99 Raw-Data=0x6699FF00 32 bits LSB first
+    Send with: IrSender.sendNEC(0x0, 0x99, <numberOfRepeats>);
+    rawData[68]:
+     -389100
+     +9050,-4500
+     + 550,- 550 + 600,- 550 + 550,- 600 + 550,- 550
+     + 600,- 550 + 550,- 600 + 550,- 550 + 550,- 600
+     + 550,-1700 + 550,-1700 + 550,-1700 + 550,-1700
+     + 600,-1650 + 550,-1700 + 600,-1700 + 550,-1700
+     + 550,-1700 + 550,- 600 + 500,- 600 + 550,-1700
+     + 550,-1700 + 600,- 550 + 550,- 550 + 600,-1700
+     + 500,- 600 + 550,-1750 + 500,-1750 + 550,- 550
+     + 550,- 600 + 550,-1700 + 550,-1700 + 550,- 600
+     + 500
+ */

@@ -10,14 +10,14 @@ void setup() {
     pixels.setBrightness(100);
     lastLedUpdate = millis();
     Serial.begin(115200);
-    //IrSender.begin();
+    IrSender.begin(IR_SEND_PIN, DISABLE_LED_FEEDBACK);
     //pinMode(ONBOARD_LED,OUTPUT);
     //input sensor pins pulled up for wire break safety
     pinMode(UPPER_LIMIT_SENSOR_PIN, INPUT_PULLUP); //nc switch, triggered when input high
     pinMode(LOWER_LIMIT_SENSER_PIN, INPUT_PULLUP); //nc switch, triggered when input high
-    pinMode(UP_BUTTON_PIN, INPUT_PULLDOWN); //no switch, triggered when input low
-    pinMode(DOWN_BUTTON_PIN, INPUT_PULLDOWN); //no switch, triggered when input low
-    pinMode(STOP_BUTTON_PIN, INPUT_PULLDOWN); //nc switch, triggered when input high //TODO: switch back to PULLDOWN!!
+    pinMode(UP_BUTTON_PIN, INPUT_PULLUP); //no switch, triggered when input low
+    pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP); //no switch, triggered when input low
+    pinMode(STOP_BUTTON_PIN, INPUT_PULLUP); //nc switch, triggered when input high
     setupOTA();
     Serial.println("Setup complete");
 }
@@ -26,18 +26,19 @@ void loop() {
     checkButtons();
     checkLimitSwitches();
 
-    //send ir according to state -> IrSender.sendNEC(sAddress, sCommand, sRepeats);
     if (state == up) {
         //send up ir
+        IrSender.sendNEC(0x0, 0x95, 1);
         //play up anim
     } else if (state == down) {
         //send down ir
+        IrSender.sendNEC(0x0, 0x99, 1);
         //play down anim
     }
 
 
     if (millis() - lastLedUpdate >= 50) {
-        state = down;
+        //state = down;
         updateLeds();
         lastLedUpdate = millis();
     }

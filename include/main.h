@@ -16,15 +16,17 @@
 //enable Serial stream
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
-#define UPPER_LIMIT_SENSOR_PIN 34
-#define LOWER_LIMIT_SENSER_PIN 35
+#define UPPER_LIMIT_SENSOR_PIN 33
+#define LOWER_LIMIT_SENSER_PIN 32
 #define UP_BUTTON_PIN 25
 #define STOP_BUTTON_PIN 26
 #define DOWN_BUTTON_PIN 27
-#define IR_SEND_PIN     5
+#define IR_SEND_PIN     4
 #define ALED_PIN        13
 
-#define NUM_LED     11
+#define NUM_LED     13
+
+#define LED_UPDATE_INTERVAL 20
 
 #define ota
 
@@ -44,7 +46,8 @@ enum state {
 
 TaskHandle_t Task1;
 
-int lastLedUpdate;
+long lastLedUpdate;
+
 
 state state = stopped;
 u_int8_t swipeLen = 5;
@@ -61,7 +64,6 @@ void send_ir_f(void *param){
             //send down ir
             IrSender.sendNEC(0x0, 0x99, 1);
         }
-        yield();
     }
 }
 

@@ -8,7 +8,7 @@ void updateLeds();
 void setup() {
     delay(200);
     pixels.setBrightness(100);
-    lastLedUpdate = millis();
+    lastLedUpdate = millis() + LED_UPDATE_INTERVAL;
     Serial.begin(115200);
     IrSender.begin(IR_SEND_PIN, DISABLE_LED_FEEDBACK);
     //pinMode(ONBOARD_LED,OUTPUT);
@@ -24,7 +24,7 @@ void setup() {
             "Send IR code",    /* name of task. */
             2000,           /* Stack size of task */
             NULL,           /* parameter of the task */
-            1,              /* priority of the task */
+            tskIDLE_PRIORITY,              /* priority of the task */
             &send_ir_task, /* Task handle to keep track of created task */
             0);
 
@@ -44,9 +44,9 @@ void loop() {
     checkButtons();
     checkLimitSwitches();
 
-    if (millis() - lastLedUpdate >= 30) {
+    if ((long)millis() - lastLedUpdate >= 0) {
+        lastLedUpdate = millis() + LED_UPDATE_INTERVAL;
         updateLeds();
-        lastLedUpdate = millis();
     }
 }
 
